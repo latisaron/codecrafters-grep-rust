@@ -3,7 +3,7 @@ use std::io;
 use std::process;
 
 fn match_recursively(mut input_line: &str, pattern: &str) -> bool {
-    while !pattern.is_empty() {
+    while !input_line.is_empty() {
         if pattern.starts_with("\\d") {
             return input_line.chars().any(|c| matches!(c, '0'..='9')) &&
                 match_recursively(&input_line[1..], &pattern[2..]);
