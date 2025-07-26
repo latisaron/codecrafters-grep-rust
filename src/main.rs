@@ -2,6 +2,18 @@ use std::env;
 use std::io;
 use std::process;
 
+fn match_recursively(input_line: &str, pattern: &str) -> bool {
+    if pattern.starts_with("\\d") {
+        input_line.chars().any(|c| matches!(c, '0'..='9')) &&
+            match_recursively(&input_line[1..], &pattern[2..])
+    } else if pattern.starts_with("\\w") {
+        input_line.chars().any(|c| c == '_' || matches!(c, '0'..='9') || matches!(c, 'a'..='z') || matches!(c, 'A'..='Z')) &&
+            match_recursively(&input_line[1..], &pattern[2..])
+    } else {
+        input_line.starts_with(pattern)
+    }
+}
+
 fn match_pattern(input_line: &str, pattern: &str) -> bool {
     if pattern.is_empty() {
         return true;
@@ -9,11 +21,9 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
         if pattern.chars().count() == 1 {
             return input_line.contains(pattern);
         } else if pattern.starts_with("\\d") {
-            return input_line.chars().any(|c| matches!(c, '0'..='9')) &&
-                match_pattern(&input_line[1..], &pattern[2..]);
+            return match_recursively(&input_line, &pattern);
         } else if pattern.starts_with("\\w") {
-            return input_line.chars().any(|c| c == '_' || matches!(c, '0'..='9') || matches!(c, 'a'..='z') || matches!(c, 'A'..='Z')) &&
-                match_pattern(&input_line[1..], &pattern[2..])
+            return match_recursively(&input_line, &pattern);
         } else if pattern.starts_with("[^") && pattern.ends_with(']') { 
             input_line.chars().any(|c| pattern[2..(pattern.len() - 1)].chars().all(|pc| pc != c))
         } else if pattern.starts_with('[') && pattern.ends_with(']') { 
