@@ -2,34 +2,32 @@ use std::env;
 use std::io;
 use std::process;
 
-fn match_recursively(input_line: &str, pattern: &str) -> bool {
-    if pattern.starts_with("\\d") {
-        input_line.chars().any(|c| matches!(c, '0'..='9')) &&
-            match_recursively(&input_line[1..], &pattern[2..])
-    } else if pattern.starts_with("\\w") {
-        input_line.chars().any(|c| c == '_' || matches!(c, '0'..='9') || matches!(c, 'a'..='z') || matches!(c, 'A'..='Z')) &&
-            match_recursively(&input_line[1..], &pattern[2..])
-    } else {
-        input_line.starts_with(pattern)
+fn match_recursively(mut input_line: &str, pattern: &str) -> bool {
+    while !pattern.is_empty() {
+        if pattern.starts_with("\\d") {
+            return input_line.chars().any(|c| matches!(c, '0'..='9')) &&
+                match_recursively(&input_line[1..], &pattern[2..]);
+        } else if pattern.starts_with("\\w") {
+            return input_line.chars().any(|c| c == '_' || matches!(c, '0'..='9') || matches!(c, 'a'..='z') || matches!(c, 'A'..='Z')) &&
+                match_recursively(&input_line[1..], &pattern[2..]);
+        } else if input_line.starts_with(pattern) {
+            return true;
+        }
+        input_line = &input_line[1..];
     }
+    false
 }
 
 fn match_pattern(input_line: &str, pattern: &str) -> bool {
     if pattern.is_empty() {
         return true;
     } else {
-        if pattern.chars().count() == 1 {
-            return input_line.contains(pattern);
-        } else if pattern.starts_with("\\d") {
-            return match_recursively(&input_line, &pattern);
-        } else if pattern.starts_with("\\w") {
-            return match_recursively(&input_line, &pattern);
-        } else if pattern.starts_with("[^") && pattern.ends_with(']') { 
+        if pattern.starts_with("[^") && pattern.ends_with(']') { 
             input_line.chars().any(|c| pattern[2..(pattern.len() - 1)].chars().all(|pc| pc != c))
         } else if pattern.starts_with('[') && pattern.ends_with(']') { 
             pattern[1..(pattern.len() - 1)].chars().any(|c| input_line.contains(c))
         } else {
-            panic!("Unhandled pattern: {}", pattern);
+            match_recursively(input_line, pattern)
         }
     }
 }
@@ -51,8 +49,10 @@ fn main() {
 
     // Uncomment this block to pass the first stage
     if match_pattern(&input_line, &pattern) {
+        eprintln!("is good");
         process::exit(0)
     } else {
+        eprintln!("is bad");
         process::exit(1)
     }
 }
