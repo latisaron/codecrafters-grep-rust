@@ -3,8 +3,11 @@ use std::io;
 use std::process;
 
 fn match_recursively(input_line: &str, pattern: &str) -> bool {
+    // eprintln!("input line is {:?} pattern is {:?}", input_line, pattern);
     if pattern.is_empty() {
         true
+    } else if input_line.is_empty() {
+        false
     } else if pattern.starts_with("\\d") {
         if let Some(character) = input_line.chars().next() { 
             matches!(character, '0'..='9') && match_recursively(&input_line[1..], &pattern[2..])
