@@ -7,6 +7,14 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
         return input_line.contains(pattern);
     } else if pattern == "\\d" {
         return input_line.chars().any(|c| matches!(c, '0'..='9'));
+    } else if pattern == "\\w" {
+        return input_line.chars().any(|c| {
+            c == '_' ||
+            matches!(c, '0'..='9') ||
+                matches!(c, 'a'..='z') ||
+                matches!(c, 'Z'..='Z')
+
+        });
     } else {
         panic!("Unhandled pattern: {}", pattern);
     }
