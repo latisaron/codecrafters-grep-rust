@@ -2,23 +2,30 @@ use std::env;
 use std::io;
 use std::process;
 
-fn match_recursively(mut input_line: &str, pattern: &str) -> bool {
-    while !input_line.is_empty() {
-        if pattern.starts_with("\\d") {
-            return input_line.chars().any(|c| matches!(c, '0'..='9')) &&
-                match_recursively(&input_line[1..], &pattern[2..]);
-        } else if pattern.starts_with("\\w") {
-            return input_line.chars().any(|c| c == '_' || matches!(c, '0'..='9') || matches!(c, 'a'..='z') || matches!(c, 'A'..='Z')) &&
-                match_recursively(&input_line[1..], &pattern[2..]);
-        } else if input_line.starts_with(pattern) {
-            return true;
+fn match_recursively(input_line: &str, pattern: &str) -> bool {
+    if pattern.is_empty() {
+        true
+    } else if pattern.starts_with("\\d") {
+        if let Some(character) = input_line.chars().next() { 
+            matches!(character, '0'..='9') && match_recursively(&input_line[1..], &pattern[2..])
+        } else {
+            false
         }
-        input_line = &input_line[1..];
+    } else if pattern.starts_with("\\w") {
+        if let Some(character) = input_line.chars().next() { 
+            (character == '_' || matches!(character, '0'..='9') || matches!(character, 'a'..='z') || matches!(character, 'A'..='Z')) &&
+                match_recursively(&input_line[1..], &pattern[2..])
+        } else {
+            false
+        }
+    } else if input_line[0..1] == pattern[0..1] && match_recursively(&input_line[1..], &pattern[1..]) {
+        true
+    } else {
+        false
     }
-    false
 }
 
-fn match_pattern(input_line: &str, pattern: &str) -> bool {
+fn match_pattern(mut input_line: &str, pattern: &str) -> bool {
     if pattern.is_empty() {
         return true;
     } else {
@@ -27,7 +34,13 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
         } else if pattern.starts_with('[') && pattern.ends_with(']') { 
             pattern[1..(pattern.len() - 1)].chars().any(|c| input_line.contains(c))
         } else {
-            match_recursively(input_line, pattern)
+            while !input_line.is_empty() {
+                if match_recursively(input_line, pattern) {
+                    return true;
+                }
+                input_line = &input_line[1..];
+            }
+            false
         }
     }
 }
