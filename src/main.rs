@@ -12,7 +12,7 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
             c == '_' ||
             matches!(c, '0'..='9') ||
                 matches!(c, 'a'..='z') ||
-                matches!(c, 'Z'..='Z')
+                matches!(c, 'A'..='Z')
 
         });
     } else {
