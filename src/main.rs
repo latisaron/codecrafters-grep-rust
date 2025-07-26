@@ -15,10 +15,10 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
                 matches!(c, 'A'..='Z')
 
         });
-    } else if pattern.starts_with('[') && pattern.ends_with(']') { 
-        pattern[1..(pattern.len() - 1)].chars().any(|c| {
-            input_line.contains(c)
-        })
+    } else if pattern.starts_with("[^") && pattern.ends_with(']') { 
+        input_line.chars().any(|c| pattern[2..(pattern.len() - 1)].chars().all(|pc| pc != c))
+    }  else if pattern.starts_with('[') && pattern.ends_with(']') { 
+        pattern[1..(pattern.len() - 1)].chars().any(|c| input_line.contains(c))
     } else {
         panic!("Unhandled pattern: {}", pattern);
     }
