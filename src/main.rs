@@ -29,9 +29,9 @@ fn match_pattern(mut input_line: &[u8], pattern: &[u8]) -> bool {
     } else {
         if pattern[0] == b'[' && pattern[pattern_length - 1] == b']' {
             if pattern[1] == b'^' {
-                input_line.iter().any(|byte| pattern.iter().all(|pattern_byte| byte != pattern_byte))
+                input_line.iter().any(|byte| pattern[1..(pattern_length - 1)].iter().all(|pattern_byte| byte != pattern_byte))
             } else {
-                input_line.iter().any(|byte| pattern.iter().any(|pattern_byte| byte == pattern_byte))
+                input_line.iter().any(|byte| pattern[1..(pattern_length - 1)].iter().any(|pattern_byte| byte == pattern_byte))
             }
         } else {
             while !input_line.is_empty() {
