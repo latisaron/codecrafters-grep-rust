@@ -2,40 +2,37 @@ use std::env;
 use std::io;
 use std::process;
 
-fn match_recursively(input_line: &str, pattern: &str) -> bool {
+fn match_recursively(input_line: &[u8], pattern: &[u8]) -> bool {
     // eprintln!("input line is {:?} pattern is {:?}", input_line, pattern);
-    if pattern.is_empty() {
+    if pattern.is_empty() { 
         true
     } else if input_line.is_empty() {
         false
-    } else if pattern.starts_with("\\d") {
-        if let Some(character) = input_line.chars().next() { 
-            matches!(character, '0'..='9') && match_recursively(&input_line[1..], &pattern[2..])
-        } else {
-            false
-        }
-    } else if pattern.starts_with("\\w") {
-        if let Some(character) = input_line.chars().next() { 
-            (character == '_' || matches!(character, '0'..='9') || matches!(character, 'a'..='z') || matches!(character, 'A'..='Z')) &&
-                match_recursively(&input_line[1..], &pattern[2..])
-        } else {
-            false
-        }
-    } else if input_line[0..1] == pattern[0..1] && match_recursively(&input_line[1..], &pattern[1..]) {
-        true
+    } else if pattern.starts_with(b"\\d") {
+        (b'0'..=b'9').contains(&input_line[0]) && match_recursively(&input_line[1..], &pattern[2..])
+    } else if pattern.starts_with(b"\\w") {
+        (
+            input_line[0] == b'_' ||
+            (b'0'..=b'9').contains(&input_line[0]) ||
+            (b'A'..=b'Z').contains(&input_line[0]) ||
+            (b'a'..=b'z').contains(&input_line[0])
+        ) && match_recursively(&input_line[1..], &pattern[2..])
     } else {
-        false
+        input_line[0] == pattern[0] && match_recursively(&input_line[1..], &pattern[1..])
     }
 }
 
-fn match_pattern(mut input_line: &str, pattern: &str) -> bool {
+fn match_pattern(mut input_line: &[u8], pattern: &[u8]) -> bool {
+    let pattern_length = pattern.len();
     if pattern.is_empty() {
         return true;
     } else {
-        if pattern.starts_with("[^") && pattern.ends_with(']') { 
-            input_line.chars().any(|c| pattern[2..(pattern.len() - 1)].chars().all(|pc| pc != c))
-        } else if pattern.starts_with('[') && pattern.ends_with(']') { 
-            pattern[1..(pattern.len() - 1)].chars().any(|c| input_line.contains(c))
+        if pattern[0] == b'[' && pattern[pattern_length - 1] == b']' {
+            if pattern[1] == b'^' {
+                input_line.iter().any(|byte| pattern.iter().all(|pattern_byte| byte != pattern_byte))
+            } else {
+                input_line.iter().any(|byte| pattern.iter().any(|pattern_byte| byte == pattern_byte))
+            }
         } else {
             while !input_line.is_empty() {
                 if match_recursively(input_line, pattern) {
@@ -63,8 +60,11 @@ fn main() {
 
     io::stdin().read_line(&mut input_line).unwrap();
 
+    let input_bytes = input_line.as_bytes();
+    let pattern_bytes = pattern.as_bytes();
+
     // Uncomment this block to pass the first stage
-    if match_pattern(&input_line, &pattern) {
+    if match_pattern(input_bytes, pattern_bytes) {
         eprintln!("is good");
         process::exit(0)
     } else {
