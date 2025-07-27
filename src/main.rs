@@ -27,12 +27,16 @@ fn match_pattern(mut input_line: &[u8], pattern: &[u8]) -> bool {
     if pattern.is_empty() {
         return true;
     } else {
+        // println!("input line is {:?} and first is {:?} and {:?} and {:?}", input_line, input_line[0], input_line[0] == b'^', b'^');
         if pattern[0] == b'[' && pattern[pattern_length - 1] == b']' {
             if pattern[1] == b'^' {
                 input_line.iter().any(|byte| pattern[1..(pattern_length - 1)].iter().all(|pattern_byte| byte != pattern_byte))
             } else {
                 input_line.iter().any(|byte| pattern[1..(pattern_length - 1)].iter().any(|pattern_byte| byte == pattern_byte))
             }
+        } else if input_line[0] == b'^' { 
+            println!("input line is {:?} pattern is{:?}", input_line, pattern);
+            input_line[1..].starts_with(pattern)
         } else {
             while !input_line.is_empty() {
                 if match_recursively(input_line, pattern) {
