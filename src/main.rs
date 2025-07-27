@@ -7,7 +7,11 @@ fn match_recursively(input_line: &[u8], pattern: &[u8]) -> bool {
     if pattern.is_empty() { 
         true
     } else if input_line.is_empty() {
-        false
+        if pattern == b"$" {
+            true
+        } else {
+            false
+        }
     } else if pattern.starts_with(b"\\d") {
         (b'0'..=b'9').contains(&input_line[0]) && match_recursively(&input_line[1..], &pattern[2..])
     } else if pattern.starts_with(b"\\w") {
